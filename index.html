@@ -1,0 +1,706 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Black Hole Explorer</title>
+<style>
+  :root{
+    --bg:#05060f; --panel:#0f1228; --panel2:#171b3a; --line:#282d58;
+    --text:#eef0ff; --muted:#9ca3cf; --accent:#ffa94d; --good:#4ade80; --bad:#f87171;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%}
+  body{background:var(--bg);color:var(--text);font-family:"Segoe UI",system-ui,-apple-system,sans-serif;display:flex;flex-direction:column}
+  header{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:10px 16px;border-bottom:1px solid var(--line);background:#090b1d}
+  .brand{display:flex;align-items:center;gap:10px}
+  .logo{font-size:28px}
+  h1{font-size:19px;margin:0}
+  .brand p{margin:0;color:var(--muted);font-size:13px}
+  .controls{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+  button,.chip{font:inherit;font-size:14px;color:var(--text);background:var(--panel2);border:1px solid var(--line);border-radius:999px;padding:7px 14px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;user-select:none}
+  button:hover,.chip:hover{border-color:#4f58a8}
+  .primary{background:linear-gradient(135deg,#ff7a2f,#ffb35c);color:#1d1005;border:none;font-weight:700}
+  .chip input{accent-color:var(--accent);margin:0}
+  main{flex:1;display:flex;min-height:0}
+  .stage{position:relative;flex:1;min-width:0}
+  canvas{display:block;width:100%;height:100%;cursor:pointer}
+  .panel{width:380px;max-width:100%;background:var(--panel);border-left:1px solid var(--line);display:flex;flex-direction:column;min-height:0}
+  .tabs{display:flex;gap:6px;padding:10px 12px;border-bottom:1px solid var(--line)}
+  .tabs button{flex:1;justify-content:center;font-size:13px;padding:7px 8px}
+  .tabs button.on{background:var(--accent);color:#1d1005;border-color:var(--accent);font-weight:700}
+  .tab{display:none;overflow:auto;padding:16px;flex:1}
+  .tab.on{display:block}
+  .lhead{display:flex;align-items:center;gap:10px}
+  .lhead .dot{width:16px;height:16px;border-radius:50%;background:var(--c);box-shadow:0 0 12px var(--c);flex:none}
+  .lhead h2{margin:0;font-size:24px}
+  .num{color:var(--muted);font-size:13px;margin:2px 0 12px 26px}
+  .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}
+  .stats div{background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:8px}
+  .stats small{display:block;color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.04em}
+  .stats b{font-size:13px}
+  .sum{line-height:1.5;margin:0 0 6px}
+  h3{font-size:14px;color:var(--accent);margin:16px 0 8px;text-transform:uppercase;letter-spacing:.05em}
+  ul.contains{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+  ul.contains li{display:flex;gap:10px;background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:8px 10px;line-height:1.4;font-size:14px}
+  ul.contains li>span{font-size:22px;line-height:1}
+  .fact{background:linear-gradient(135deg,#2a1f4f,#3a1f2f);border-radius:10px;padding:10px 12px;line-height:1.5;margin:0}
+  .navrow{display:flex;justify-content:space-between;margin-top:16px;gap:8px}
+  .mnem{margin-top:16px;border:1px dashed #4f58a8;border-radius:10px;padding:10px 12px;font-size:14px;line-height:1.5}
+  .mnem b{color:var(--accent)}
+  .q{font-size:17px;line-height:1.4;margin:6px 0 12px}
+  .opts{display:grid;gap:8px}
+  .opts button{border-radius:10px;justify-content:flex-start;text-align:left;padding:10px 12px}
+  .opts button.right{background:#163d2a;border-color:var(--good)}
+  .opts button.wrong{background:#3f1a1f;border-color:var(--bad)}
+  .why{margin-top:12px;line-height:1.5;font-size:14px;color:var(--muted)}
+  .progress{color:var(--muted);font-size:13px;display:flex;justify-content:space-between}
+  input[type=range]{width:100%;accent-color:var(--accent)}
+  .presets{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0 4px}
+  .presets button{font-size:12px;padding:5px 10px}
+  .big{font-size:26px;font-weight:700;margin:4px 0 2px}
+  .result{background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:10px 12px;line-height:1.5;font-size:14px;margin-top:10px}
+  .result b{color:#ffd29a}
+  .steps{list-style:none;margin:0;padding:0;display:grid;gap:6px;counter-reset:s}
+  .steps li{counter-increment:s;display:flex;gap:10px;align-items:flex-start;font-size:14px;line-height:1.4}
+  .steps li::before{content:counter(s);flex:none;width:22px;height:22px;border-radius:50%;background:var(--accent);color:#1d1005;font-weight:700;font-size:12px;display:grid;place-items:center}
+  .air-list{padding-left:18px;line-height:1.55;font-size:14px}
+  .tourbar{position:absolute;left:50%;bottom:16px;transform:translateX(-50%);display:flex;align-items:center;gap:10px;background:rgba(9,11,29,.93);border:1px solid var(--line);border-radius:14px;padding:10px 12px;box-shadow:0 8px 30px rgba(0,0,0,.6);max-width:calc(100% - 32px)}
+  .tourbar b{display:block}
+  .tourbar span{color:var(--muted);font-size:13px;display:block}
+  .ghost{background:transparent}
+  .tip{position:absolute;pointer-events:none;background:rgba(9,11,29,.92);border:1px solid var(--line);padding:4px 8px;border-radius:8px;font-size:13px;white-space:nowrap}
+  .hidden{display:none!important}
+  @media (max-width:820px){
+    main{flex-direction:column}
+    .stage{flex:none;height:62vh}
+    .panel{width:100%;border-left:none;border-top:1px solid var(--line)}
+    .tab{overflow:visible}
+    .tourbar{flex-wrap:wrap;justify-content:center}
+  }
+</style>
+</head>
+<body>
+<header>
+  <div class="brand">
+    <span class="logo">🕳️</span>
+    <div><h1>Black Hole Explorer</h1><p>Click any part of the black hole to see what's going on there</p></div>
+  </div>
+  <div class="controls">
+    <button id="tourBtn" class="primary">🧑‍🚀 Fall in tour</button>
+    <label class="chip"><input type="checkbox" id="tRays"> Light paths</label>
+    <label class="chip"><input type="checkbox" id="tLabels" checked> Labels</label>
+    <button id="pauseBtn">⏸ Pause</button>
+  </div>
+</header>
+<main>
+  <section class="stage" id="stage">
+    <canvas id="cv"></canvas>
+    <div id="tip" class="tip hidden"></div>
+    <div id="tourBar" class="tourbar hidden">
+      <div><b id="tourTitle">Starting…</b><span id="tourInfo"></span><span id="tourClock"></span></div>
+      <button id="tourNext" class="primary">Keep falling ▶</button>
+      <button id="tourStop" class="ghost" title="Stop tour">✕</button>
+    </div>
+  </section>
+  <aside class="panel">
+    <nav class="tabs">
+      <button data-tab="zone" class="on">Parts</button>
+      <button data-tab="size">Sizes &amp; types</button>
+      <button data-tab="quiz">Quiz</button>
+    </nav>
+    <div id="tab-zone" class="tab on"></div>
+    <div id="tab-size" class="tab"></div>
+    <div id="tab-quiz" class="tab"></div>
+  </aside>
+</main>
+
+<script>
+/* ---------------- Data ---------------- */
+// Distances are in Schwarzschild radii (Rs): the event horizon is at 1 Rs.
+const ZONES = [
+  { name:'Gravitational lensing', color:'#8fb4ff',
+    stats:[['Where','All around it'],['Light escapes?','Yes'],['Time runs','Nearly normal']],
+    sum:'Far from the black hole, nothing gets sucked in: you could orbit it just like a planet orbits a star. But its gravity is so strong that it bends light passing nearby, like a giant magnifying glass. Watch the background stars get pushed outwards and doubled as they drift past.',
+    contains:[
+      ['💍','Einstein rings','A star or galaxy exactly behind a black hole gets smeared into a glowing ring.'],
+      ['✨','Double images','The same star can appear twice, once on each side of the black hole.'],
+      ['⭐','Orbiting stars','Astronomers found the black hole at the centre of our galaxy by watching stars whip around it.'],
+      ['🌊','Gravitational waves','When two black holes merge, they shake space itself. LIGO first detected this in 2015.']
+    ],
+    fact:'Black holes don\'t "suck". If the Sun were swapped for a black hole of the same mass, Earth would keep orbiting exactly as it does now (it would just get very cold and dark).' },
+  { name:'Relativistic jets', color:'#b48cff',
+    stats:[['Where','Above & below the poles'],['Speed','~99% of light'],['Length','Up to 1 million light-years']],
+    sum:'Not everything that falls towards a black hole goes in. Twisted magnetic fields in the spinning disk can fling some of the gas out along the poles in two narrow beams moving at almost the speed of light. The jets start just outside the event horizon, never from inside it.',
+    contains:[
+      ['⚡','Magnetic fields','The spinning disk winds magnetic fields into a tight spiral that acts like a launcher.'],
+      ['💨','Super-fast plasma','Charged particles blasted out at close to the speed of light.'],
+      ['📡','Radio waves','Jets glow brightly in radio light and can be seen across the universe.'],
+      ['🌌','Giant lobes','Where jets crash into gas between galaxies they puff up into huge glowing clouds.']
+    ],
+    fact:'The jet from the black hole M87* is about 5,000 light-years long. It was spotted in 1918, long before anyone knew black holes existed.' },
+  { name:'Accretion disk', color:'#ff9a3c',
+    stats:[['Where','From 3 Rs outwards'],['Temperature','Up to ~10 million °C'],['Gas speed','Up to half of light']],
+    sum:'Gas and dust don\'t fall straight in. They swirl around in a flat, spinning disk, like water around a plug hole. Friction heats the gas to millions of degrees, so it glows brighter than anything else. The disk\'s inner edge is the last stable orbit (3 Rs for a non-spinning hole); closer in, gas plunges straight down.',
+    contains:[
+      ['🔥','Super-hot gas','The inner parts glow white and blue and give off X-rays.'],
+      ['🌀','Spiralling matter','Gas slowly spirals inwards, going faster the closer it gets.'],
+      ['💡','A brighter side','Gas moving towards us looks brighter (Doppler beaming). That\'s why one side of the disk shines more.'],
+      ['🌟','Quasars','A supermassive black hole feeding fast can outshine its whole galaxy of billions of stars.']
+    ],
+    fact:'Feeding a black hole is the most efficient way to make energy in the universe: about 10% of the mass turns into light. The Sun\'s nuclear fusion only manages about 0.7%.' },
+  { name:'Photon sphere', color:'#ffe08a',
+    stats:[['Where','1.5 Rs'],['Light escapes?','Only just'],['Time runs','~58% speed']],
+    sum:'Here gravity is so strong that light itself can travel in a circle around the black hole. This orbit is unstable: the slightest nudge sends the light either spiralling in or escaping out. The light that just escapes makes the bright ring around the dark "shadow" in real black hole photos.',
+    contains:[
+      ['🔁','Orbiting light','Photons can loop around the black hole one or more times before escaping.'],
+      ['💍','The photon ring','The thin bright ring seen in Event Horizon Telescope images.'],
+      ['🌑','The shadow edge','The dark shadow looks about 2.6 times wider than the event horizon because light is bent around it.'],
+      ['🪞','Bent images','You can see the back of the disk too: its light curves up over the top of the black hole.']
+    ],
+    fact:'If you stood on the photon sphere and looked straight sideways, you could see the back of your own head, because the light goes all the way around.' },
+  { name:'Event horizon', color:'#ff5d73',
+    stats:[['Where','1 Rs'],['Light escapes?','Never'],['Time runs','Stops (seen from far away)']],
+    sum:'The point of no return. At the event horizon, the speed you would need to escape equals the speed of light, and nothing can go faster than light. It is not a solid surface, just an invisible boundary. Its radius is called the Schwarzschild radius.',
+    contains:[
+      ['🚪','A one-way door','You can cross it going in, but nothing (not even light) can ever come back out.'],
+      ['⏱️','Frozen time','To someone far away, a falling astronaut seems to slow down and freeze at the horizon.'],
+      ['🔴','Redshift','Light from near the horizon is stretched to redder and redder colours until it fades away.'],
+      ['♨️','Hawking radiation','Stephen Hawking predicted black holes very slowly leak energy and could one day evaporate.']
+    ],
+    fact:'For a giant black hole you wouldn\'t notice crossing the horizon at all. For a small one, tides would stretch you like spaghetti before you even got there.' },
+  { name:'Singularity', color:'#ffffff',
+    stats:[['Where','The very centre'],['Density','Infinite (in theory)'],['Physics','Breaks down']],
+    sum:'Einstein\'s theory of gravity predicts that all the black hole\'s mass gets crushed into a single point of zero size and infinite density. Most scientists think this really means our theories stop working here, and that a new theory of quantum gravity is needed to explain what actually happens.',
+    contains:[
+      ['⚫','All the mass','Everything that ever fell in ends up here.'],
+      ['🍝','Spaghettification','Gravity on your feet becomes far stronger than on your head, stretching you thin.'],
+      ['❓','Unknown physics','Nobody knows what really happens here. It\'s one of the biggest mysteries in science.'],
+      ['💫','A ring (if spinning)','For a spinning black hole, the singularity is predicted to be a ring, not a point.']
+    ],
+    fact:'Once inside the horizon, the singularity isn\'t a place in front of you any more, it\'s a moment in your future. Every possible path leads there, just like every path leads to tomorrow.' }
+];
+const ORDER_NOTE = 'Lensing · Jets · Accretion disk · Photon sphere · Event horizon · Singularity';
+
+const QUIZ = [
+  {q:'What is the "point of no return" around a black hole called?', a:'The event horizon', o:['The photon sphere','The accretion disk','The singularity'], zone:4, why:'Once you cross the event horizon, not even light can get back out.'},
+  {q:'Why can\'t light escape from inside the event horizon?', a:'The escape speed is faster than light', o:['It is too dark inside','The gas blocks it','Light is too heavy'], zone:4, why:'At the horizon the escape speed equals the speed of light, and inside it is even higher.'},
+  {q:'What is the glowing, swirling ring of hot gas around a black hole?', a:'The accretion disk', o:['The photon sphere','A jet','The event horizon'], zone:2, why:'Gas spirals in and friction heats it to millions of degrees, so it glows.'},
+  {q:'Where can light travel in a circle around the black hole?', a:'The photon sphere', o:['The accretion disk','The singularity','Far away in space'], zone:3, why:'At 1.5 times the horizon radius, light can (just) orbit the black hole.'},
+  {q:'What does Einstein\'s theory predict is at the very centre?', a:'A singularity', o:['A neutron star','A tiny Sun','Nothing at all'], zone:5, why:'All the mass is crushed into a point of infinite density, where the theory breaks down.'},
+  {q:'What is it called when a black hole bends light from stars behind it?', a:'Gravitational lensing', o:['Spaghettification','Hawking radiation','Redshift'], zone:0, why:'Its gravity acts like a lens, shifting, brightening and doubling the images of stars.'},
+  {q:'What shoots out of the poles of some feeding black holes?', a:'Jets of plasma', o:['Light from the singularity','Comets','Nothing ever escapes'], zone:1, why:'Magnetic fields fling some gas out at nearly the speed of light, from just outside the horizon.'},
+  {q:'What is "spaghettification"?', a:'Being stretched by tidal forces', o:['A black hole spinning','Light orbiting','A star exploding'], zone:5, why:'Gravity pulls much harder on the side of you nearer the black hole, stretching you long and thin.'},
+  {q:'If the Sun became a black hole with the same mass, what would happen to Earth\'s orbit?', a:'It would stay the same', o:['Earth would be sucked in','Earth would fly away','Earth would orbit faster'], zone:0, why:'Gravity far away only depends on mass, so the orbit wouldn\'t change.'},
+  {q:'How big would the event horizon be if the Sun became a black hole?', a:'About 3 km', o:['About 3 m','The size of Earth','The size of the Sun'], zone:-1, why:'The Schwarzschild radius is about 3 km for every Sun\'s worth of mass.'},
+  {q:'What is the black hole at the centre of our Milky Way called?', a:'Sagittarius A*', o:['M87*','Cygnus X-1','TON 618'], zone:-1, why:'Sagittarius A* has about 4 million times the mass of the Sun.'},
+  {q:'How do stellar-mass black holes usually form?', a:'A massive star\'s core collapses', o:['Two planets collide','The Sun cools down','A comet freezes'], zone:-1, why:'When a very massive star runs out of fuel, its core collapses and may become a black hole.'},
+  {q:'Seen from far away, what seems to happen to a clock falling into a black hole?', a:'It slows down and freezes', o:['It speeds up','It runs backwards','Nothing changes'], zone:4, why:'Strong gravity slows time. At the horizon, it seems to stop completely from far away.'},
+  {q:'Why does one side of the accretion disk look brighter?', a:'Gas on that side moves towards us', o:['It is closer to the Sun','It has more stars','The jet lights it up'], zone:2, why:'Doppler beaming: light from gas rushing towards us is boosted and brighter.'},
+  {q:'Which was the first black hole ever photographed (in 2019)?', a:'M87*', o:['Sagittarius A*','Cygnus X-1','Gaia BH3'], zone:-1, why:'The Event Horizon Telescope imaged M87* in 2019, then Sagittarius A* in 2022.'}
+];
+
+const PRESETS = [
+  ['☀️ Sun', 1], ['Cygnus X-1', 21], ['Gaia BH3', 33], ['Sagittarius A*', 4.3e6], ['M87*', 6.5e9], ['TON 618', 4e10]
+];
+
+/* ---------------- Geometry ---------------- */
+const stage = document.getElementById('stage');
+const cv = document.getElementById('cv'), ctx = cv.getContext('2d');
+let W = 0, H = 0, R = 30, cx = 0, cy = 0;
+const TILT = 0.22, DISK_IN = 3, DISK_OUT = 11.5, LENS = 3.2;
+
+const rand = (a,b) => a + Math.random()*(b-a);
+const clamp = (v,a,b) => Math.max(a,Math.min(b,v));
+const X = u => cx + u*R, Y = v => cy + v*R;
+
+function resize(){
+  const r = stage.getBoundingClientRect();
+  const dpr = Math.min(2, window.devicePixelRatio || 1);
+  W = r.width; H = r.height;
+  cv.width = Math.round(W*dpr); cv.height = Math.round(H*dpr);
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+  R = Math.min(W/25, H/13);
+  if (W < 600) R = Math.min(W/18, H/13);
+  cx = W*.5; cy = H*.5;
+  makeStars(); makeRays();
+}
+window.addEventListener('resize', resize);
+
+// which zone is under a screen point
+function zoneAt(px,py){
+  const dx = (px-cx)/R, dy = (py-cy)/R, r = Math.hypot(dx,dy);
+  if (r < .35) return 5;
+  if (r < 1) return 4;
+  if (r < 1.9) return 3;
+  if ((dx/DISK_OUT)**2 + (dy/(DISK_OUT*TILT))**2 <= 1) return 2;
+  if (Math.abs(dx) < 1 && Math.abs(dy) > 1.9) return 1;
+  return 0;
+}
+
+/* ---------------- Scene objects ---------------- */
+let stars = [];
+function makeStars(){
+  const hw = W/2/R + 4, hh = H/2/R + 4;
+  stars = Array.from({length:260}, () => ({x:rand(-hw,hw), y:rand(-hh,hh), r:rand(.35,1.4), p:rand(0,6.28), hw}));
+}
+const disk = Array.from({length:520}, () => {
+  const t = Math.random();
+  return {r: DISK_IN + (DISK_OUT-DISK_IN)*t*t, a: rand(0,6.28), s: rand(.6,1.8)};
+});
+const jetBlobs = Array.from({length:26}, () => ({d:rand(1.5,20), up:Math.random()<.5, off:rand(-.3,.3)}));
+
+// Light paths around a non-rotating black hole (units of Rs).
+// Photon orbit equation in Cartesian form: a = -1.5 h² r / |r|^5
+let rays = [];
+function traceRay(b){
+  let x = -W/2/R - 2, y = b, vx = 1, vy = 0;
+  const h2 = b*b, pts = [[x,y]];
+  let caught = false;
+  for (let i=0;i<20000;i++){
+    const r = Math.hypot(x,y);
+    if (r < 1){ caught = true; break; }
+    if (Math.abs(x) > W/2/R + 3 || Math.abs(y) > H/2/R + 3) break;
+    const dt = .004*clamp(r,1,8);
+    const k = -1.5*h2/Math.pow(r,5);
+    vx += k*x*dt; vy += k*y*dt;
+    const n = Math.hypot(vx,vy); vx /= n; vy /= n;
+    x += vx*dt; y += vy*dt;
+    if (i % 6 === 0) pts.push([x,y]);
+  }
+  pts.push([x,y]);
+  return {b, pts, caught, t:Math.random()};
+}
+function makeRays(){
+  rays = [-7,-4.5,-3.3,-2.7,-2.62,-2,-1, 1.4, 2.4, 2.61, 2.75, 3.6, 5.5].map(traceRay);
+}
+
+/* ---------------- State ---------------- */
+let selected = 2, hovered = -1, paused = false, showRays = false, showLabels = true;
+let time = 0, last = performance.now();
+// fall-in tour: astronaut moves along the disk plane from the left
+const STOPS = [{r:15,z:0},{r:7,z:2},{r:1.5,z:3},{r:1.0,z:4},{r:.12,z:5}];
+const tour = {active:false, r:22, next:0, waiting:false, done:false};
+
+/* ---------------- Drawing ---------------- */
+function drawSpace(){
+  const g = ctx.createRadialGradient(cx,cy,0,cx,cy,Math.max(W,H)*.7);
+  g.addColorStop(0,'#120d24'); g.addColorStop(.5,'#080919'); g.addColorStop(1,'#03040b');
+  ctx.fillStyle = g; ctx.fillRect(0,0,W,H);
+}
+
+// stars are drawn where the lens would show them (two images each)
+function drawStars(dt){
+  for (const s of stars){
+    s.x += .25*dt; if (s.x > s.hw) s.x = -s.hw;
+    const rho = Math.max(.01, Math.hypot(s.x,s.y)), ux = s.x/rho, uy = s.y/rho;
+    const root = Math.sqrt(rho*rho + 4*LENS*LENS);
+    const u = rho/LENS, A = (u*u+2)/(u*Math.sqrt(u*u+4));
+    const tw = .6 + .4*Math.sin(time*2 + s.p);
+    const imgs = [[(rho+root)/2, (A+1)/2], [(rho-root)/2, (A-1)/2]];
+    for (const [ri, amp] of imgs){
+      if (Math.abs(ri) < 1.05 || amp < .02) continue;
+      const a = clamp(amp,0,1.6)*tw;
+      ctx.fillStyle = `rgba(255,255,255,${clamp(a,0,1)})`;
+      ctx.beginPath(); ctx.arc(X(ux*ri), Y(uy*ri), s.r*clamp(Math.sqrt(amp),.5,2.4), 0, 6.28); ctx.fill();
+    }
+  }
+}
+
+function diskColor(r, bright){
+  const t = (r-DISK_IN)/(DISK_OUT-DISK_IN);
+  const c = t < .15 ? [255,250,235] : t < .45 ? [255,200,110] : t < .75 ? [255,140,50] : [200,70,30];
+  return `rgba(${c[0]},${c[1]},${c[2]},${bright})`;
+}
+function drawDiskBase(front){
+  ctx.save();
+  ctx.translate(cx,cy); ctx.scale(1,TILT);
+  ctx.beginPath();
+  front ? ctx.rect(-W,0,2*W,H/TILT) : ctx.rect(-W,-H/TILT,2*W,H/TILT);
+  ctx.clip();
+  const g = ctx.createRadialGradient(0,0,DISK_IN*R,0,0,DISK_OUT*R);
+  g.addColorStop(0,'rgba(255,245,220,.95)'); g.addColorStop(.2,'rgba(255,190,90,.75)');
+  g.addColorStop(.6,'rgba(230,100,30,.4)'); g.addColorStop(1,'rgba(150,40,20,0)');
+  ctx.fillStyle = g;
+  ctx.beginPath(); ctx.arc(0,0,DISK_OUT*R,0,6.28); ctx.arc(0,0,DISK_IN*R,6.28,0,true); ctx.fill();
+  // Doppler beaming: the right side moves towards us and looks brighter
+  const d = ctx.createLinearGradient(-DISK_OUT*R,0,DISK_OUT*R,0);
+  d.addColorStop(0,'rgba(5,6,15,.45)'); d.addColorStop(.5,'rgba(5,6,15,0)'); d.addColorStop(1,'rgba(255,240,200,.18)');
+  ctx.fillStyle = d;
+  ctx.beginPath(); ctx.arc(0,0,DISK_OUT*R,0,6.28); ctx.arc(0,0,DISK_IN*R,6.28,0,true); ctx.fill();
+  ctx.restore();
+}
+function drawDiskParticles(dt, front){
+  for (const p of disk){
+    if (front) p.a += 2.6*Math.pow(p.r,-1.5)*dt;
+    const sn = Math.sin(p.a), cs = Math.cos(p.a);
+    if ((sn > 0) !== front) continue;
+    const bright = clamp(.35 + .45*cs + .25, .08, 1);
+    ctx.fillStyle = diskColor(p.r, bright);
+    ctx.fillRect(X(p.r*cs), Y(p.r*sn*TILT), p.s, p.s*.8);
+  }
+}
+// light from the back of the disk, bent up over the top of the hole
+function drawLensedArc(){
+  ctx.save();
+  ctx.lineCap = 'round';
+  const g = ctx.createLinearGradient(X(-2.4),0,X(2.4),0);
+  g.addColorStop(0,'rgba(255,150,60,.35)'); g.addColorStop(.5,'rgba(255,200,120,.7)'); g.addColorStop(1,'rgba(255,230,180,.85)');
+  ctx.strokeStyle = g;
+  ctx.lineWidth = .55*R; ctx.beginPath(); ctx.arc(cx,cy,2.05*R,Math.PI*1.02,Math.PI*1.98); ctx.stroke();
+  ctx.lineWidth = .22*R; ctx.globalAlpha = .55; ctx.beginPath(); ctx.arc(cx,cy,1.75*R,Math.PI*.08,Math.PI*.92); ctx.stroke();
+  ctx.restore();
+}
+function drawHole(){
+  // photon ring
+  ctx.save();
+  ctx.strokeStyle = `rgba(255,236,170,${.75+.2*Math.sin(time*3)})`;
+  ctx.lineWidth = Math.max(1.5,R*.07); ctx.shadowColor = '#ffd27a'; ctx.shadowBlur = 12;
+  ctx.beginPath(); ctx.arc(cx,cy,1.5*R,0,6.28); ctx.stroke();
+  ctx.restore();
+  // shadow & horizon
+  const g = ctx.createRadialGradient(cx,cy,R*.9,cx,cy,1.45*R);
+  g.addColorStop(0,'#000'); g.addColorStop(1,'rgba(0,0,0,0)');
+  ctx.fillStyle = g; ctx.beginPath(); ctx.arc(cx,cy,1.45*R,0,6.28); ctx.fill();
+  ctx.fillStyle = '#000'; ctx.beginPath(); ctx.arc(cx,cy,R,0,6.28); ctx.fill();
+  // the singularity is hidden, so draw it as a faint marker
+  if (selected === 5 || hovered === 5){
+    ctx.fillStyle = `rgba(255,255,255,${.6+.4*Math.sin(time*5)})`;
+    ctx.beginPath(); ctx.arc(cx,cy,2.2,0,6.28); ctx.fill();
+  }
+}
+function drawJets(dt){
+  const top = cy - H*.55, bot = cy + H*.55;
+  for (const dir of [-1,1]){
+    const y0 = cy + dir*1.3*R, y1 = dir < 0 ? top : bot;
+    const g = ctx.createLinearGradient(0,y0,0,y1);
+    g.addColorStop(0,'rgba(200,170,255,.55)'); g.addColorStop(.5,'rgba(140,110,255,.22)'); g.addColorStop(1,'rgba(110,90,255,0)');
+    ctx.fillStyle = g;
+    ctx.beginPath(); ctx.moveTo(cx-.15*R,y0); ctx.lineTo(cx-.9*R,y1); ctx.lineTo(cx+.9*R,y1); ctx.lineTo(cx+.15*R,y0); ctx.fill();
+  }
+  const maxD = H/2/R + 2;
+  for (const b of jetBlobs){
+    b.d += dt*(4 + b.d*.3); if (b.d > maxD){ b.d = 1.5; b.off = rand(-.3,.3); }
+    const w = .15 + b.d*.04;
+    ctx.fillStyle = `rgba(225,210,255,${clamp(1-b.d/maxD,0,.9)})`;
+    ctx.beginPath(); ctx.arc(X(b.off*w*3), Y((b.up?-1:1)*b.d), 1.8, 0, 6.28); ctx.fill();
+  }
+}
+function drawRays(dt){
+  if (!showRays) return;
+  ctx.save();
+  for (const ray of rays){
+    ctx.strokeStyle = ray.caught ? 'rgba(255,110,110,.35)' : 'rgba(255,240,150,.3)';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ray.pts.forEach(([x,y],i) => i ? ctx.lineTo(X(x),Y(y)) : ctx.moveTo(X(x),Y(y)));
+    ctx.stroke();
+    ray.t += dt*.18; if (ray.t > 1.15) ray.t = 0;
+    const n = ray.pts.length, k = Math.min(n-1, Math.floor(ray.t*n));
+    if (ray.t <= 1){
+      ctx.strokeStyle = ray.caught ? '#ff8080' : '#fff2a0'; ctx.lineWidth = 2.5;
+      ctx.shadowColor = ctx.strokeStyle; ctx.shadowBlur = 8;
+      ctx.beginPath();
+      for (let j=Math.max(0,k-14); j<=k; j++){ const [x,y] = ray.pts[j]; j===Math.max(0,k-14) ? ctx.moveTo(X(x),Y(y)) : ctx.lineTo(X(x),Y(y)); }
+      ctx.stroke(); ctx.shadowBlur = 0;
+    }
+  }
+  ctx.font = '12px Segoe UI, sans-serif'; ctx.textAlign = 'left';
+  ctx.fillStyle = 'rgba(255,240,170,.95)'; ctx.fillText('— light that escapes (bent by gravity)', 12, H-30);
+  ctx.fillStyle = 'rgba(255,140,140,.95)'; ctx.fillText('— light that falls in', 12, H-14);
+  ctx.restore();
+}
+
+function drawHighlight(){
+  const z = selected;
+  ctx.save();
+  ctx.strokeStyle = `rgba(255,190,110,${.65+.3*Math.sin(time*3)})`; ctx.lineWidth = 2; ctx.setLineDash([6,5]);
+  ctx.beginPath();
+  if (z === 0){ ctx.arc(cx,cy,LENS*R,0,6.28); }
+  else if (z === 1){ for (const d of [-1,1]){ ctx.rect(cx-1*R, d<0 ? 0 : cy+1.9*R, 2*R, cy-1.9*R); } }
+  else if (z === 2){ ctx.ellipse(cx,cy,DISK_OUT*R,DISK_OUT*R*TILT,0,0,6.28); ctx.moveTo(cx+DISK_IN*R,cy); ctx.ellipse(cx,cy,DISK_IN*R,DISK_IN*R*TILT,0,0,6.28); }
+  else if (z === 3){ ctx.arc(cx,cy,1.5*R+4,0,6.28); }
+  else if (z === 4){ ctx.arc(cx,cy,R+2,0,6.28); }
+  else { ctx.arc(cx,cy,7,0,6.28); }
+  ctx.stroke();
+  if (z === 0){
+    ctx.setLineDash([]); ctx.font = '11px Segoe UI, sans-serif'; ctx.fillStyle = 'rgba(255,210,150,.9)'; ctx.textAlign = 'center';
+    ctx.fillText('Einstein ring: stars passing behind here get smeared into arcs', cx, cy - LENS*R - 8);
+  }
+  ctx.restore();
+}
+
+function drawLabels(){
+  if (!showLabels) return;
+  const small = W < 600;
+  const L = [
+    [5, [0,0], [-6,-4.2], 'Singularity (hidden inside)'],
+    [4, [.7,-.7], [4.2,-4.6], 'Event horizon · 1 Rs'],
+    [3, [1.2,-.9], [6.4,-2.9], 'Photon sphere · 1.5 Rs'],
+    [2, [8.5,1.4], [7,4.4], 'Accretion disk'],
+    [1, [0,-6.5], [1.6,-8], 'Jet'],
+    [0, null, [-11,-7], 'Bent starlight (lensing)']
+  ];
+  ctx.save();
+  ctx.font = `600 ${small?11:13}px Segoe UI, sans-serif`;
+  for (const [z, a, t, text] of L){
+    const on = z === selected;
+    const tx = clamp(X(t[0]), 8, W-8), ty = clamp(Y(t[1]), 16, H-8);
+    ctx.textAlign = tx < cx ? 'left' : 'left';
+    const w = ctx.measureText(text).width;
+    const lx = clamp(tx, 8, W - w - 8);
+    if (a){
+      ctx.strokeStyle = on ? 'rgba(255,200,130,.9)' : 'rgba(255,255,255,.4)'; ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(X(a[0]),Y(a[1])); ctx.lineTo(lx + (lx < X(a[0]) ? w : 0), ty-4); ctx.stroke();
+    }
+    ctx.shadowColor = 'rgba(0,0,0,.8)'; ctx.shadowBlur = 6;
+    ctx.fillStyle = on ? '#ffd29a' : 'rgba(255,255,255,.9)';
+    ctx.fillText(text, lx, ty);
+    ctx.shadowBlur = 0;
+  }
+  ctx.font = '11px Segoe UI, sans-serif'; ctx.fillStyle = 'rgba(255,255,255,.55)';
+  ctx.fillText('Rs = Schwarzschild radius (size of the event horizon)', 12, 18);
+  if (selected === 2){
+    ctx.fillStyle = 'rgba(255,230,180,.8)'; ctx.textAlign = 'right';
+    ctx.fillText('brighter side: gas moving towards you →', X(DISK_OUT), Y(DISK_OUT*TILT)+16);
+  }
+  ctx.restore();
+}
+
+function drawAstronaut(dt){
+  if (!tour.active) return;
+  if (!tour.waiting && !tour.done){
+    const speed = clamp(2.2*Math.sqrt(12/Math.max(tour.r,.1)), 1.5, 5);
+    tour.r -= speed*dt*.6;
+    const stop = STOPS[tour.next];
+    if (stop && tour.r <= stop.r){
+      tour.r = stop.r; tour.waiting = true;
+      select(stop.z); showTab('zone');
+      tourTitle.textContent = tour.next === 4 ? 'You\'ve reached the singularity…' : `You're at the ${ZONES[stop.z].name}!`;
+      tourNext.textContent = tour.next === 4 ? 'End tour ✓' : 'Keep falling ▶';
+      tourNext.classList.remove('hidden');
+      tour.next++;
+      if (tour.next > 4) tour.done = true;
+    }
+  }
+  const r = tour.r;
+  tourInfo.textContent = r > .2 ? `Distance from centre: ${r.toFixed(r<2?2:1)} Rs` : 'Distance from centre: 0';
+  tourClock.textContent = r > 1.001
+    ? `⏱ Your watch ticks at ${Math.round(Math.sqrt(1-1/r)*100)}% the speed of a far-away clock`
+    : '⏱ Inside the horizon: every path now leads to the centre';
+  // tidal stretching grows fast close in (shown for a small, star-sized black hole)
+  const stretch = 1 + clamp(2.2/(r*r), 0, 5);
+  const x = X(-r), y = cy - 6 + (tour.waiting ? Math.sin(time*3)*2 : 0);
+  ctx.save();
+  ctx.translate(x,y); ctx.scale(stretch, 1/Math.sqrt(stretch));
+  ctx.globalAlpha = r < 1 ? .75 : 1;
+  ctx.font = `${Math.max(20, R*.9)}px "Segoe UI Emoji", sans-serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillText('🧑‍🚀', 0, 0);
+  ctx.restore();
+  if (stretch > 1.6){
+    ctx.font = '11px Segoe UI, sans-serif'; ctx.fillStyle = 'rgba(255,200,150,.9)'; ctx.textAlign = 'center';
+    ctx.fillText('🍝 being stretched!', x, y - R*.9 - 6);
+  }
+}
+
+function frame(now){
+  let dt = Math.min(.05, (now-last)/1000); last = now;
+  if (paused) dt = 0;
+  time += dt;
+  ctx.clearRect(0,0,W,H);
+  drawSpace();
+  drawStars(dt);
+  drawDiskBase(false);
+  drawDiskParticles(dt, false);
+  drawLensedArc();
+  drawHole();
+  drawJets(dt);
+  drawDiskBase(true);
+  drawDiskParticles(dt, true);
+  drawRays(dt);
+  drawHighlight();
+  drawLabels();
+  drawAstronaut(dt);
+  requestAnimationFrame(frame);
+}
+
+/* ---------------- Panel ---------------- */
+const tabZone = document.getElementById('tab-zone');
+function renderZone(){
+  const Z = ZONES[selected];
+  tabZone.innerHTML = `
+    <div class="lhead" style="--c:${Z.color}"><span class="dot"></span><h2>${Z.name}</h2></div>
+    <div class="num">Part ${selected+1} of 6 · going from the outside in</div>
+    <div class="stats">${Z.stats.map(s=>`<div><small>${s[0]}</small><b>${s[1]}</b></div>`).join('')}</div>
+    <p class="sum">${Z.sum}</p>
+    <h3>What's going on here</h3>
+    <ul class="contains">${Z.contains.map(c=>`<li><span>${c[0]}</span><div><b>${c[1]}</b><br>${c[2]}</div></li>`).join('')}</ul>
+    <h3>Did you know?</h3>
+    <p class="fact">${Z.fact}</p>
+    <div class="navrow">
+      <button id="outer" ${selected===0?'disabled style="opacity:.4"':''}>◀ Further out</button>
+      <button id="inner" ${selected===5?'disabled style="opacity:.4"':''}>Closer in ▶</button>
+    </div>
+    <div class="mnem">🧠 <b>Remember the order</b> (outside to centre):<br>
+      "<b>L</b>azy <b>J</b>aguars <b>A</b>lways <b>P</b>refer <b>E</b>xtra <b>S</b>leep"<br>
+      <span style="color:var(--muted)">${ORDER_NOTE}</span></div>`;
+  document.getElementById('outer').onclick = () => select(selected-1);
+  document.getElementById('inner').onclick = () => select(selected+1);
+}
+function select(i){ selected = clamp(i,0,5); renderZone(); }
+
+/* ---------------- Sizes & types ---------------- */
+function fmtKm(km){
+  if (km < 1) return `${Math.round(km*1000)} m`;
+  if (km < 1e6) return `${Math.round(km).toLocaleString()} km`;
+  const au = km/1.496e8;
+  if (au < 1) return `${(km/1e6).toFixed(1)} million km`;
+  return `${au < 10 ? au.toFixed(2) : Math.round(au).toLocaleString()} AU <span style="color:var(--muted);font-weight:400">(${(km/1e9).toFixed(1)} billion km)</span>`;
+}
+function fmtMass(m){
+  if (m < 1000) return `${+m.toPrecision(3)}`;
+  if (m < 1e6) return `${+(m/1e3).toPrecision(3)} thousand`;
+  if (m < 1e9) return `${+(m/1e6).toPrecision(3)} million`;
+  return `${+(m/1e9).toPrecision(3)} billion`;
+}
+function compare(km){
+  if (km < 25) return 'about the size of a town 🏘️';
+  if (km < 120) return 'about the size of a big city 🏙️';
+  if (km < 1000) return 'about the size of a small country 🗺️';
+  if (km < 6371) return 'smaller than Earth 🌍';
+  if (km < 696000) return 'smaller than the Sun ☀️';
+  if (km < 1.496e8) return 'would fit inside Earth\'s orbit 🪐';
+  if (km < 4.5e9) return 'would fit inside Neptune\'s orbit (our Solar System)';
+  return 'bigger than our whole Solar System! 🤯';
+}
+function renderSize(){
+  document.getElementById('tab-size').innerHTML = `
+    <h2 style="margin:0 0 4px">How big is a black hole?</h2>
+    <p class="sum" style="color:var(--muted)">The more mass, the bigger the event horizon. Drag the slider (mass in Suns):</p>
+    <input type="range" id="mass" min="0" max="10.7" step="0.01" value="0">
+    <div class="presets">${PRESETS.map((p,i)=>`<button data-i="${i}">${p[0]}</button>`).join('')}</div>
+    <div id="sizeOut"></div>
+    <h3>Types of black hole</h3>
+    <ul class="contains">
+      <li><span>⭐</span><div><b>Stellar-mass (3 – 100 Suns)</b><br>Made when a giant star collapses. Our galaxy probably has around 100 million of them.</div></li>
+      <li><span>🌗</span><div><b>Intermediate (100 – 100,000 Suns)</b><br>Rare "in-between" black holes, maybe found in dense star clusters.</div></li>
+      <li><span>🌌</span><div><b>Supermassive (millions – billions of Suns)</b><br>Found at the centre of almost every big galaxy, including ours.</div></li>
+      <li><span>⚛️</span><div><b>Primordial (idea only)</b><br>Tiny black holes that might have formed just after the Big Bang. None found yet.</div></li>
+    </ul>
+    <h3>How a black hole is born</h3>
+    <ol class="steps">
+      <li>A star at least about 20 times heavier than the Sun burns through its fuel.</li>
+      <li>With no energy pushing out, gravity makes its core collapse in under a second.</li>
+      <li>The outer layers blast away in a supernova explosion.</li>
+      <li>If the leftover core is heavier than about 3 Suns, nothing can stop it: it becomes a black hole.</li>
+    </ol>
+    <h3>How do we find them if they're black?</h3>
+    <ul class="air-list">
+      <li><b>X-rays</b> from hot gas in the accretion disk (Cygnus X-1 was found this way in 1964).</li>
+      <li><b>Stars orbiting nothing visible</b>: the star S2 loops around Sagittarius A* every 16 years.</li>
+      <li><b>Gravitational waves</b> from black holes crashing together (first detected by LIGO in 2015).</li>
+      <li><b>Photos</b> of the shadow by the Event Horizon Telescope: M87* (2019) and Sagittarius A* (2022).</li>
+    </ul>`;
+  const slider = document.getElementById('mass');
+  slider.oninput = () => showSize(Math.pow(10, +slider.value));
+  document.querySelectorAll('.presets button').forEach(b => b.onclick = () => {
+    const m = PRESETS[b.dataset.i][1]; slider.value = Math.log10(m); showSize(m, PRESETS[b.dataset.i][0]);
+  });
+  showSize(1, PRESETS[0][0]);
+}
+function showSize(m, name){
+  const km = 2.953*m;
+  const type = m < 3 ? 'Too light to form from a star' : m < 100 ? 'Stellar-mass black hole' : m < 1e5 ? 'Intermediate-mass black hole' : 'Supermassive black hole';
+  const dens = 1.84e19/(m*m)/1000; // average density inside the horizon, in "times water"
+  const densTxt = dens > 1e6 ? `${dens.toExponential(1).replace('e+',' × 10^')} times water` : dens >= 1 ? `${+dens.toPrecision(2)} times water` : `${+dens.toPrecision(2)} times water (less dense than water! 💧)`;
+  const spag = m < 1e4 ? 'Yes, before reaching the horizon 🍝' : 'No, you\'d cross the horizon in one piece (for now…)';
+  document.getElementById('sizeOut').innerHTML = `
+    <div class="result">
+      ${name ? `<div style="color:var(--muted)">${name.replace(/^[^A-Za-z]+/,'')} ${name.includes('Sun')?'(if it became a black hole)':''}</div>` : ''}
+      <div class="big">${fmtMass(m)} × the Sun</div>
+      <div>${type}</div>
+      <div style="margin-top:8px">Event horizon radius: <b>${fmtKm(km)}</b></div>
+      <div>That's ${compare(km)}</div>
+      <div style="margin-top:8px;color:var(--muted)">Average density inside: ${densTxt}</div>
+      <div style="color:var(--muted)">Spaghettified on the way in? ${spag}</div>
+    </div>
+    <p class="why">Rule of thumb: about <b style="color:var(--accent)">3 km of radius per Sun of mass</b>. Squash Earth into a black hole and it would be just 9 mm across, the size of a marble.</p>`;
+}
+
+/* ---------------- Quiz ---------------- */
+let qOrder = [], qi = 0, score = 0;
+const shuffle = a => { a = a.slice(); for (let i=a.length-1;i>0;i--){ const j = Math.random()*(i+1)|0; [a[i],a[j]] = [a[j],a[i]]; } return a; };
+function startQuiz(){ qOrder = shuffle(QUIZ).slice(0,10); qi = 0; score = 0; renderQuiz(); }
+function renderQuiz(){
+  const el = document.getElementById('tab-quiz');
+  if (qi >= qOrder.length){
+    const msg = score === qOrder.length ? '🏆 Perfect! You\'re a black hole expert!' : score >= 8 ? '🌟 Great work!' : score >= 5 ? '👍 Good try. Explore the parts and try again!' : '📚 Have another look around the black hole and try again!';
+    el.innerHTML = `<h2>Quiz complete!</h2><p class="q">You scored <b>${score} / ${qOrder.length}</b></p><p>${msg}</p><button class="primary" id="again">Try again</button>`;
+    document.getElementById('again').onclick = startQuiz;
+    return;
+  }
+  const Q = qOrder[qi], opts = shuffle([Q.a, ...Q.o]);
+  el.innerHTML = `
+    <div class="progress"><span>Question ${qi+1} of ${qOrder.length}</span><span>Score: ${score}</span></div>
+    <p class="q">${Q.q}</p>
+    <div class="opts">${opts.map(o=>`<button>${o}</button>`).join('')}</div>
+    <div id="why"></div>`;
+  el.querySelectorAll('.opts button').forEach(b => b.onclick = () => {
+    const right = b.textContent === Q.a;
+    if (right) score++;
+    el.querySelectorAll('.opts button').forEach(x => { x.disabled = true; if (x.textContent === Q.a) x.classList.add('right'); });
+    if (!right) b.classList.add('wrong');
+    if (Q.zone >= 0){ selected = Q.zone; }
+    document.getElementById('why').innerHTML = `<p class="why">${right?'✅ Correct!':'❌ Not quite.'} ${Q.why}${Q.zone>=0?' (It\'s now highlighted in the picture.)':''}</p>
+      <button class="primary" id="nextQ">${qi+1<qOrder.length?'Next question ▶':'See my score'}</button>`;
+    document.getElementById('nextQ').onclick = () => { qi++; renderQuiz(); renderZone(); };
+  });
+}
+
+/* ---------------- Controls ---------------- */
+function showTab(name){
+  document.querySelectorAll('.tabs button').forEach(b => b.classList.toggle('on', b.dataset.tab===name));
+  document.querySelectorAll('.tab').forEach(t => t.classList.toggle('on', t.id==='tab-'+name));
+}
+document.querySelectorAll('.tabs button').forEach(b => b.onclick = () => showTab(b.dataset.tab));
+
+const tip = document.getElementById('tip');
+cv.addEventListener('mousemove', e => {
+  const r = cv.getBoundingClientRect(), y = e.clientY - r.top, x = e.clientX - r.left;
+  hovered = zoneAt(x,y);
+  tip.textContent = `${ZONES[hovered].name} · click to learn`;
+  tip.style.left = Math.min(x+14, W-210) + 'px'; tip.style.top = (y+14) + 'px';
+  tip.classList.remove('hidden');
+});
+cv.addEventListener('mouseleave', () => { hovered = -1; tip.classList.add('hidden'); });
+cv.addEventListener('click', e => {
+  const r = cv.getBoundingClientRect();
+  select(zoneAt(e.clientX - r.left, e.clientY - r.top)); showTab('zone');
+});
+
+document.getElementById('tRays').onchange = e => showRays = e.target.checked;
+document.getElementById('tLabels').onchange = e => showLabels = e.target.checked;
+const pauseBtn = document.getElementById('pauseBtn');
+pauseBtn.onclick = () => { paused = !paused; pauseBtn.textContent = paused ? '▶ Play' : '⏸ Pause'; };
+
+const tourBar = document.getElementById('tourBar'), tourTitle = document.getElementById('tourTitle'),
+      tourInfo = document.getElementById('tourInfo'), tourClock = document.getElementById('tourClock'),
+      tourNext = document.getElementById('tourNext');
+document.getElementById('tourBtn').onclick = () => {
+  Object.assign(tour, {active:true, r:Math.min(22, W/2/R - 1), next:0, waiting:false, done:false});
+  tourTitle.textContent = 'Drifting towards the black hole…'; tourNext.classList.add('hidden');
+  tourBar.classList.remove('hidden');
+  if (paused) pauseBtn.click();
+};
+tourNext.onclick = () => {
+  if (tour.done){ endTour(); return; }
+  tour.waiting = false; tourNext.classList.add('hidden'); tourTitle.textContent = 'Falling…';
+};
+function endTour(){ tour.active = false; tourBar.classList.add('hidden'); }
+document.getElementById('tourStop').onclick = endTour;
+
+resize(); renderZone(); renderSize(); startQuiz();
+requestAnimationFrame(frame);
+</script>
+</body>
+</html>
