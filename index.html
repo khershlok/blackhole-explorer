@@ -66,6 +66,7 @@
   .steps li::before{content:counter(s);flex:none;width:22px;height:22px;border-radius:50%;background:var(--accent);color:#1d1005;font-weight:700;font-size:12px;display:grid;place-items:center}
   .air-list{padding-left:18px;line-height:1.55;font-size:14px}
   .tourbar{position:absolute;left:50%;bottom:16px;transform:translateX(-50%);display:flex;align-items:center;gap:10px;background:rgba(9,11,29,.93);border:1px solid var(--line);border-radius:14px;padding:10px 12px;box-shadow:0 8px 30px rgba(0,0,0,.6);max-width:calc(100% - 32px)}
+  .tourbar>div{min-width:230px}
   .tourbar b{display:block}
   .tourbar span{color:var(--muted);font-size:13px;display:block}
   .ghost{background:transparent}
@@ -77,6 +78,7 @@
     .panel{width:100%;border-left:none;border-top:1px solid var(--line)}
     .tab{overflow:visible}
     .tourbar{flex-wrap:wrap;justify-content:center}
+    .tourbar>div{min-width:0}
   }
 </style>
 </head>
@@ -406,8 +408,8 @@ function drawRays(dt){
     }
   }
   ctx.font = '12px Segoe UI, sans-serif'; ctx.textAlign = 'left';
-  ctx.fillStyle = 'rgba(255,240,170,.95)'; ctx.fillText('— light that escapes (bent by gravity)', 12, H-30);
-  ctx.fillStyle = 'rgba(255,140,140,.95)'; ctx.fillText('— light that falls in', 12, H-14);
+  ctx.fillStyle = 'rgba(255,240,170,.95)'; ctx.fillText('— light that escapes (bent by gravity)', 12, 38);
+  ctx.fillStyle = 'rgba(255,140,140,.95)'; ctx.fillText('— light that falls in', 12, 54);
   ctx.restore();
 }
 
@@ -472,7 +474,7 @@ function drawAstronaut(dt){
   if (!tour.waiting && !tour.done){
     const speed = clamp(2.2*Math.sqrt(12/Math.max(tour.r,.1)), 1.5, 5);
     tour.r -= speed*dt*.6;
-    const stop = STOPS[tour.next];
+    const stop = STOPS[tour.next] && {...STOPS[tour.next], r: tour.next === 0 ? Math.min(STOPS[0].r, W/2/R - 1.5) : STOPS[tour.next].r};
     if (stop && tour.r <= stop.r){
       tour.r = stop.r; tour.waiting = true;
       select(stop.z); showTab('zone');
@@ -687,7 +689,7 @@ const tourBar = document.getElementById('tourBar'), tourTitle = document.getElem
       tourInfo = document.getElementById('tourInfo'), tourClock = document.getElementById('tourClock'),
       tourNext = document.getElementById('tourNext');
 document.getElementById('tourBtn').onclick = () => {
-  Object.assign(tour, {active:true, r:Math.min(22, W/2/R - 1), next:0, waiting:false, done:false});
+  Object.assign(tour, {active:true, r:W/2/R + 1, next:0, waiting:false, done:false});
   tourTitle.textContent = 'Drifting towards the black hole…'; tourNext.classList.add('hidden');
   tourBar.classList.remove('hidden');
   if (paused) pauseBtn.click();
