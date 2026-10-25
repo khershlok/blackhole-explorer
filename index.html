@@ -71,6 +71,21 @@
   .tourbar span{color:var(--muted);font-size:13px;display:block}
   .ghost{background:transparent}
   .tip{position:absolute;pointer-events:none;background:rgba(9,11,29,.92);border:1px solid var(--line);padding:4px 8px;border-radius:8px;font-size:13px;white-space:nowrap}
+  .phys{line-height:1.55;font-size:14px}
+  .phys p{margin:0 0 8px}
+  .eq{font-family:"Cambria Math",Cambria,Georgia,serif;font-size:18px;background:#0b0e22;border:1px solid var(--line);border-left:3px solid var(--accent);border-radius:8px;padding:8px 12px;margin:6px 0}
+  .eq small{display:block;font-family:"Segoe UI",system-ui,sans-serif;font-size:12px;color:var(--muted);margin-top:3px;line-height:1.4}
+  dl.terms{margin:0;font-size:14px;line-height:1.45}
+  dl.terms dt{font-weight:700;color:#ffd29a;margin-top:6px}
+  dl.terms dd{margin:0}
+  #scaleCv{width:100%;height:210px;background:#070918;border:1px solid var(--line);border-radius:10px;margin-top:10px;display:block}
+  .meter{height:12px;background:#0b0e22;border-radius:6px;overflow:hidden;border:1px solid var(--line);margin:6px 0}
+  .meter i{display:block;height:100%;background:linear-gradient(90deg,#ffb35c,#ff5d73)}
+  .work{font-size:14px;line-height:1.6;background:#0b0e22;border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+  .work .ln{font-family:"Cambria Math",Cambria,Georgia,serif;font-size:16px}
+  .timeline{list-style:none;margin:0;padding:0;font-size:14px;line-height:1.45}
+  .timeline li{display:flex;gap:10px;padding:5px 0;border-bottom:1px solid var(--line)}
+  .timeline b{color:var(--accent);flex:none;width:42px}
   .hidden{display:none!important}
   @media (max-width:820px){
     main{flex-direction:column}
@@ -108,11 +123,13 @@
   <aside class="panel">
     <nav class="tabs">
       <button data-tab="zone" class="on">Parts</button>
-      <button data-tab="size">Sizes &amp; types</button>
+      <button data-tab="size">Sizes</button>
+      <button data-tab="phys">Physics</button>
       <button data-tab="quiz">Quiz</button>
     </nav>
     <div id="tab-zone" class="tab on"></div>
     <div id="tab-size" class="tab"></div>
+    <div id="tab-phys" class="tab"></div>
     <div id="tab-quiz" class="tab"></div>
   </aside>
 </main>
@@ -184,6 +201,54 @@ const ZONES = [
 ];
 const ORDER_NOTE = 'Lensing · Jets · Accretion disk · Photon sphere · Event horizon · Singularity';
 
+// Deeper, Year 10 / GCSE-level physics for each part (same order as ZONES)
+const PHYSICS = [
+  { text:`<p>Einstein's <b>general relativity</b> (1915) says mass doesn't just pull on things, it <b>curves spacetime</b>. Light always takes the straightest possible path, but through curved spacetime that path bends, so a black hole acts like a lens.</p>
+    <p>Far from the black hole its gravity behaves just like Newton's: it follows an <b>inverse square law</b>. Double your distance and the force drops to a quarter. That's why you can orbit safely at a distance.</p>
+    <p>In 1919, Arthur Eddington measured starlight bending around the Sun during a solar eclipse. It matched Einstein's prediction and made him world-famous.</p>`,
+    eq:[['F = GMm / r²','Newton\'s law of gravity. G = 6.67 × 10⁻¹¹ N m²/kg², M and m are the masses (kg), r is the distance between their centres (m).'],
+        ['θ ≈ 2Rₛ / b','How much light is bent (in radians) when it passes a distance b from the centre. Closer = more bending.']],
+    terms:[['Spacetime','Space and time joined into one 4-D "fabric" that mass can bend.'],['Inverse square law','A quantity that falls as 1/r²: 2× the distance → ¼ of the effect.'],['Gravitational lensing','The bending and magnifying of light from distant objects by a massive object in front.']] },
+  { text:`<p>Gas near a black hole is so hot that electrons are ripped off the atoms, leaving a <b>plasma</b> of charged particles. Moving charges create <b>magnetic fields</b>, and the spinning disk twists those field lines into a tight coil along the poles.</p>
+    <p>A spinning black hole drags spacetime round with it. The twisted fields tap into this <b>rotational kinetic energy</b> and use it to launch particles out at more than 99% of the speed of light. At these <b>relativistic</b> speeds Einstein's special relativity matters: the particles' clocks run slow and their mass-energy increases.</p>`,
+    eq:[['E = mc²','Mass and energy are linked. c = 3 × 10⁸ m/s, so a tiny mass stores a huge amount of energy.']],
+    terms:[['Plasma','A gas so hot its atoms are ionised into charged ions and electrons.'],['Ionisation','Removing electrons from an atom so it becomes charged.'],['Relativistic','Moving close enough to the speed of light that Einstein\'s relativity is needed.']] },
+  { text:`<p>Gas can't fall straight in because of <b>conservation of angular momentum</b>. Like an ice skater pulling in their arms, gas spins faster as it moves closer. It ends up in a flat, rotating disk.</p>
+    <p>Orbital speed rises closer in, so neighbouring rings of gas rub together. <b>Friction</b> transfers energy: gravitational potential energy → kinetic energy → thermal energy → <b>electromagnetic radiation</b>.</p>
+    <p>Hotter objects emit radiation with <b>shorter wavelengths</b>. The outer disk glows in visible and ultraviolet light; the inner disk, at about 10 million K, gives off mostly <b>X-rays</b>. That's how we spot black holes with X-ray telescopes.</p>
+    <p>Inside about 3 Rₛ no stable orbit is possible (the <b>innermost stable circular orbit</b>), so the disk's inner edge is there.</p>`,
+    eq:[['v = √(GM / r)','Orbital speed of gas at distance r. Smaller r → faster orbit.'],
+        ['λₘₐₓ = 2.9 × 10⁻³ / T','Wien\'s law: peak wavelength (m) for temperature T (K). At 10⁷ K, λ ≈ 3 × 10⁻¹⁰ m: X-rays.']],
+    terms:[['Angular momentum','The "amount of spin" an object has. It is conserved unless something exerts a turning force.'],['Black-body radiation','Radiation every object emits because of its temperature. Hotter means more energy and shorter wavelength.'],['Doppler effect','Waves from a source moving towards you are squashed (bluer, brighter); moving away, they\'re stretched (redder, dimmer).']] },
+  { text:`<p>Light has no mass, yet gravity still bends it because gravity is <b>curved spacetime</b>. At 1.5 Rₛ the curve is so tight that light moving sideways goes round in a full circle.</p>
+    <p>This orbit is an <b>unstable equilibrium</b>, like a ball balanced on top of a hill. Any tiny push sends the light spiralling in or flying off. Light that just escapes from here forms the thin <b>photon ring</b> in the Event Horizon Telescope photos.</p>
+    <p>Because light is bent so strongly, the black hole's <b>shadow</b> looks about 2.6 Rₛ wide, much bigger than the event horizon itself.</p>`,
+    eq:[['r = 1.5 Rₛ = 3GM / c²','Radius of the photon sphere for a non-spinning black hole.'],
+        ['Shadow radius = (√27 / 2) Rₛ ≈ 2.6 Rₛ','How big the dark shadow appears to a distant observer.']],
+    terms:[['Photon','A tiny packet of light energy. It has no mass and travels at c.'],['Unstable equilibrium','A balanced state where any small disturbance grows, so the object doesn\'t return.']] },
+  { text:`<p><b>Escape velocity</b> is the minimum speed needed to escape an object's gravity. For Earth it's 11.2 km/s. Pack the same mass into a smaller radius and the escape velocity goes up.</p>
+    <p>Setting kinetic energy equal to the gravitational energy you must overcome: ½mv² = GMm/r, so v = √(2GM/r). When v equals the speed of light, nothing can escape. Rearranging gives the <b>Schwarzschild radius</b>, the size of the event horizon.</p>
+    <p>Strong gravity also <b>slows time</b>. Close to the horizon your clock runs slow compared to a distant one. Light climbing out loses energy, so its wavelength gets longer: <b>gravitational redshift</b>. At the horizon itself the slowing and the redshift become infinite, as seen from far away.</p>`,
+    eq:[['v = √(2GM / r)','Escape velocity (m/s) from distance r of a mass M.'],
+        ['Rₛ = 2GM / c²','Schwarzschild radius. For the Sun: 2 × 6.67×10⁻¹¹ × 2×10³⁰ ÷ (3×10⁸)² ≈ 3 000 m = 3 km.'],
+        ['t_far = t_near / √(1 − Rₛ / r)','Gravitational time dilation: how much time passes far away while t_near passes for you at distance r.']],
+    terms:[['Escape velocity','The minimum launch speed needed to escape an object\'s gravity without further thrust.'],['Schwarzschild radius','The radius of the event horizon of a non-spinning black hole.'],['Gravitational redshift','The stretching of light\'s wavelength as it climbs out of a strong gravitational field.']] },
+  { text:`<p>A <b>tidal force</b> is the difference in gravity across an object. Falling feet-first, your feet are closer than your head so they're pulled harder, and you get stretched. Because tidal force depends on <b>1/r³</b>, it grows extremely fast near the centre.</p>
+    <p>Bigger black holes have horizons much further from the centre, so tides at the horizon are gentle. For a 10-Sun black hole the stretch at the horizon is millions of times Earth's gravity; for Sagittarius A* it's tiny.</p>
+    <p><b>Density = mass ÷ volume</b>. At the singularity the volume is predicted to be zero, so the density would be infinite. Our two best theories, general relativity and quantum mechanics, disagree here. Roger Penrose won the 2020 Nobel Prize for proving that singularities must form.</p>`,
+    eq:[['Δa ≈ 2GML / r³','Tidal stretch (m/s²) on an object of length L at distance r from mass M.'],
+        ['ρ = m / V','Density. As V → 0 with m fixed, ρ → ∞.']],
+    terms:[['Tidal force','The stretching caused by gravity being stronger on one side of an object than the other.'],['Singularity','A point where a theory predicts infinite values and stops working.'],['Quantum gravity','A future theory that would combine general relativity with quantum mechanics.']] }
+];
+
+// To-scale comparison objects for the size slider: [name, radius in km, colour or 'orbit']
+const THINGS = [
+  ['a town', 4, '#7c8c6a'], ['London', 25, '#8f96a3'], ['Great Britain', 450, '#4f8a4f'], ['the Moon', 1737, '#c4c4c4'],
+  ['Earth', 6371, '#3f7fd0'], ['Jupiter', 69911, '#d9a066'], ['the Sun', 696000, '#ffcc4d'],
+  ['Earth\'s orbit', 1.496e8, 'orbit'], ['Neptune\'s orbit', 4.5e9, 'orbit'], ['the Oort Cloud\'s inner edge', 3e11, 'orbit']
+];
+let massName = '1 Sun', massKm = 2.953;
+
 const QUIZ = [
   {q:'What is the "point of no return" around a black hole called?', a:'The event horizon', o:['The photon sphere','The accretion disk','The singularity'], zone:4, why:'Once you cross the event horizon, not even light can get back out.'},
   {q:'Why can\'t light escape from inside the event horizon?', a:'The escape speed is faster than light', o:['It is too dark inside','The gas blocks it','Light is too heavy'], zone:4, why:'At the horizon the escape speed equals the speed of light, and inside it is even higher.'},
@@ -199,7 +264,17 @@ const QUIZ = [
   {q:'How do stellar-mass black holes usually form?', a:'A massive star\'s core collapses', o:['Two planets collide','The Sun cools down','A comet freezes'], zone:-1, why:'When a very massive star runs out of fuel, its core collapses and may become a black hole.'},
   {q:'Seen from far away, what seems to happen to a clock falling into a black hole?', a:'It slows down and freezes', o:['It speeds up','It runs backwards','Nothing changes'], zone:4, why:'Strong gravity slows time. At the horizon, it seems to stop completely from far away.'},
   {q:'Why does one side of the accretion disk look brighter?', a:'Gas on that side moves towards us', o:['It is closer to the Sun','It has more stars','The jet lights it up'], zone:2, why:'Doppler beaming: light from gas rushing towards us is boosted and brighter.'},
-  {q:'Which was the first black hole ever photographed (in 2019)?', a:'M87*', o:['Sagittarius A*','Cygnus X-1','Gaia BH3'], zone:-1, why:'The Event Horizon Telescope imaged M87* in 2019, then Sagittarius A* in 2022.'}
+  {q:'Which was the first black hole ever photographed (in 2019)?', a:'M87*', o:['Sagittarius A*','Cygnus X-1','Gaia BH3'], zone:-1, why:'The Event Horizon Telescope imaged M87* in 2019, then Sagittarius A* in 2022.'},
+  {q:'Which equation gives the Schwarzschild radius?', a:'Rₛ = 2GM / c²', o:['Rₛ = GM / r²','Rₛ = mc²','Rₛ = ½mv²'], zone:4, why:'Set escape velocity √(2GM/r) equal to c and rearrange for r.'},
+  {q:'If a black hole\'s mass doubles, what happens to its Schwarzschild radius?', a:'It doubles', o:['It halves','It quadruples','It stays the same'], zone:4, why:'Rₛ = 2GM/c², so Rₛ is directly proportional to M.'},
+  {q:'Escape velocity from Earth is 11.2 km/s. What is it at an event horizon?', a:'The speed of light', o:['11.2 km/s','Half the speed of light','Zero'], zone:4, why:'That\'s the definition of the event horizon: escape velocity = c.'},
+  {q:'Far from a black hole, if you double your distance, the gravitational force becomes…', a:'A quarter as strong', o:['Half as strong','Twice as strong','The same'], zone:0, why:'Gravity follows an inverse square law: F ∝ 1/r², so 2× the distance gives 1/2² = 1/4.'},
+  {q:'Why does gas in the accretion disk spin faster as it moves inwards?', a:'Conservation of angular momentum', o:['Conservation of mass','Newton\'s third law','Magnetism'], zone:2, why:'Like a skater pulling in their arms, a smaller orbit means faster spin.'},
+  {q:'Why does the inner accretion disk give off X-rays rather than visible light?', a:'Hotter objects emit shorter wavelengths', o:['X-rays are heavier','The black hole makes X-rays','Visible light can\'t travel in space'], zone:2, why:'At about 10 million K the peak wavelength (Wien\'s law) is in the X-ray part of the EM spectrum.'},
+  {q:'What energy transfer heats the accretion disk?', a:'Gravitational potential → kinetic → thermal', o:['Chemical → thermal','Nuclear → light','Thermal → gravitational'], zone:2, why:'Gas falls inwards (losing GPE), speeds up, and friction turns the kinetic energy into heat.'},
+  {q:'At 4 Rₛ, roughly how fast does a clock tick compared to one far away?', a:'About 87%', o:['About 25%','About 50%','Exactly 100%'], zone:4, why:'√(1 − 1/4) = √0.75 ≈ 0.87.'},
+  {q:'Why are tidal forces at the horizon of a supermassive black hole gentle?', a:'The horizon is very far from the centre', o:['It has less mass','It spins slower','It has no gravity there'], zone:5, why:'Tidal force ∝ M/r³, and the horizon radius grows with M, so overall it drops as 1/M².'},
+  {q:'Light has no mass. Why does a black hole still bend it?', a:'Gravity curves spacetime itself', o:['Light has a tiny hidden mass','Magnetic fields pull it','It doesn\'t bend light'], zone:3, why:'In general relativity, light follows the straightest path through curved spacetime.'}
 ];
 
 const PRESETS = [
@@ -461,7 +536,7 @@ function drawLabels(){
     ctx.shadowBlur = 0;
   }
   ctx.font = '11px Segoe UI, sans-serif'; ctx.fillStyle = 'rgba(255,255,255,.55)';
-  ctx.fillText('Rs = Schwarzschild radius (size of the event horizon)', 12, 18);
+  ctx.fillText(`Rs = Schwarzschild radius (event horizon size). For ${massName}: 1 Rs = ${fmtPlain(massKm)}`, 12, 18);
   if (selected === 2){
     ctx.fillStyle = 'rgba(255,230,180,.8)'; ctx.textAlign = 'right';
     ctx.fillText('brighter side: gas moving towards you →', X(DISK_OUT), Y(DISK_OUT*TILT)+16);
@@ -529,7 +604,7 @@ function frame(now){
 /* ---------------- Panel ---------------- */
 const tabZone = document.getElementById('tab-zone');
 function renderZone(){
-  const Z = ZONES[selected];
+  const Z = ZONES[selected], P = PHYSICS[selected];
   tabZone.innerHTML = `
     <div class="lhead" style="--c:${Z.color}"><span class="dot"></span><h2>${Z.name}</h2></div>
     <div class="num">Part ${selected+1} of 6 · going from the outside in</div>
@@ -537,6 +612,11 @@ function renderZone(){
     <p class="sum">${Z.sum}</p>
     <h3>What's going on here</h3>
     <ul class="contains">${Z.contains.map(c=>`<li><span>${c[0]}</span><div><b>${c[1]}</b><br>${c[2]}</div></li>`).join('')}</ul>
+    <h3>🔬 The physics</h3>
+    <div class="phys">${P.text}</div>
+    ${P.eq.map(e=>`<div class="eq">${e[0]}<small>${e[1]}</small></div>`).join('')}
+    <h3>Key words</h3>
+    <dl class="terms">${P.terms.map(t=>`<dt>${t[0]}</dt><dd>${t[1]}</dd>`).join('')}</dl>
     <h3>Did you know?</h3>
     <p class="fact">${Z.fact}</p>
     <div class="navrow">
@@ -571,8 +651,8 @@ function compare(km){
   if (km < 1000) return 'about the size of a small country 🗺️';
   if (km < 6371) return 'smaller than Earth 🌍';
   if (km < 696000) return 'smaller than the Sun ☀️';
-  if (km < 1.496e8) return 'would fit inside Earth\'s orbit 🪐';
-  if (km < 4.5e9) return 'would fit inside Neptune\'s orbit (our Solar System)';
+  if (km < 1.496e8) return 'small enough to fit inside Earth\'s orbit 🪐';
+  if (km < 4.5e9) return 'small enough to fit inside Neptune\'s orbit (our Solar System)';
   return 'bigger than our whole Solar System! 🤯';
 }
 function renderSize(){
@@ -614,8 +694,12 @@ function showSize(m, name){
   const km = 2.953*m;
   const type = m < 3 ? 'Too light to form from a star' : m < 100 ? 'Stellar-mass black hole' : m < 1e5 ? 'Intermediate-mass black hole' : 'Supermassive black hole';
   const dens = 1.84e19/(m*m)/1000; // average density inside the horizon, in "times water"
-  const densTxt = dens > 1e6 ? `${dens.toExponential(1).replace('e+',' × 10^')} times water` : dens >= 1 ? `${+dens.toPrecision(2)} times water` : `${+dens.toPrecision(2)} times water (less dense than water! 💧)`;
-  const spag = m < 1e4 ? 'Yes, before reaching the horizon 🍝' : 'No, you\'d cross the horizon in one piece (for now…)';
+  const densTxt = dens > 1e6 ? `${sci(dens)} times water` : dens >= 1 ? `${+dens.toPrecision(2)} times water` : `${+dens.toPrecision(2)} times water (less dense than water! 💧)`;
+  // tidal stretch at the horizon on a 2 m person: Δa = 2GML/Rs³ = Lc⁶/(4G²M²)
+  const tidalG = 2*Math.pow(3e8,6)/(4*Math.pow(6.674e-11,2)*Math.pow(m*1.989e30,2))/9.81;
+  const tidalTxt = tidalG >= 1000 ? `${sci(tidalG)} g` : tidalG >= .01 ? `${+tidalG.toPrecision(2)} g` : `${sci(tidalG)} g (you wouldn't feel it)`;
+  const spag = tidalG > 50 ? 'Yes, before reaching the horizon 🍝' : 'No, you\'d cross the horizon in one piece (for now…)';
+  massKm = km; massName = name && !name.includes('Sun') ? name : `${fmtMass(m)} Sun${m===1?'':'s'}`;
   document.getElementById('sizeOut').innerHTML = `
     <div class="result">
       ${name ? `<div style="color:var(--muted)">${name.replace(/^[^A-Za-z]+/,'')} ${name.includes('Sun')?'(if it became a black hole)':''}</div>` : ''}
@@ -623,20 +707,171 @@ function showSize(m, name){
       <div>${type}</div>
       <div style="margin-top:8px">Event horizon radius: <b>${fmtKm(km)}</b></div>
       <div>That's ${compare(km)}</div>
-      <div style="margin-top:8px;color:var(--muted)">Average density inside: ${densTxt}</div>
+    </div>
+    <canvas id="scaleCv"></canvas>
+    <p class="why" style="margin-top:6px">Drawn to scale. The black circle is the event horizon; the object next to it is the closest thing in size.</p>
+    <h3>Work it out</h3>
+    <div class="work">
+      <div class="ln">Rₛ = 2GM / c²</div>
+      <div class="ln">M = ${fmtMass(m)} × 2.0 × 10³⁰ kg = ${sci(m*1.989e30)} kg</div>
+      <div class="ln">Rₛ = 2 × 6.67×10⁻¹¹ × ${sci(m*1.989e30)} ÷ (3.0×10⁸)²</div>
+      <div class="ln">Rₛ ≈ ${sci(km*1000)} m</div>
+    </div>
+    <div class="result">
+      <div>Average density inside the horizon: <b>${densTxt}</b></div>
+      <div>Stretch on a 2 m person at the horizon: <b>${tidalTxt}</b></div>
       <div style="color:var(--muted)">Spaghettified on the way in? ${spag}</div>
     </div>
-    <p class="why">Rule of thumb: about <b style="color:var(--accent)">3 km of radius per Sun of mass</b>. Squash Earth into a black hole and it would be just 9 mm across, the size of a marble.</p>`;
+    <p class="why">Rule of thumb: about <b style="color:var(--accent)">3 km of radius per Sun of mass</b>, so Rₛ is directly proportional to M (double the mass, double the radius). Squash Earth into a black hole and it would be just 9 mm across, the size of a marble. Notice density goes down as 1/M²: the biggest black holes are less dense than water on average!</p>`;
+  drawScale(km);
+}
+const SUP = {'-':'⁻','0':'⁰','1':'¹','2':'²','3':'³','4':'⁴','5':'⁵','6':'⁶','7':'⁷','8':'⁸','9':'⁹'};
+function sci(x){
+  if (x >= .01 && x < 1e4) return `${+x.toPrecision(3)}`;
+  const e = Math.floor(Math.log10(x)), mant = x/Math.pow(10,e);
+  return `${mant.toFixed(1)} × 10${String(e).split('').map(c=>SUP[c]).join('')}`;
+}
+function fmtPlain(km){
+  if (km < 1) return `${Math.round(km*1000)} m`;
+  if (km < 1e6) return `${(+km.toPrecision(3)).toLocaleString()} km`;
+  if (km < 1.496e8) return `${(km/1e6).toFixed(1)} million km`;
+  return `${(+(km/1.496e8).toPrecision(3)).toLocaleString()} AU`;
+}
+function drawScale(km){
+  const c = document.getElementById('scaleCv'), g = c.getContext('2d');
+  const dpr = Math.min(2, window.devicePixelRatio || 1), w = c.clientWidth || 340, h = c.clientHeight || 210;
+  c.width = w*dpr; c.height = h*dpr; g.setTransform(dpr,0,0,dpr,0,0);
+  const thing = THINGS.reduce((a,b) => Math.abs(Math.log(b[1]/km)) < Math.abs(Math.log(a[1]/km)) ? b : a);
+  const maxR = Math.min(w*.2, h*.36), sc = maxR/Math.max(km, thing[1]);
+  const rH = Math.max(km*sc, 1.5), rT = Math.max(thing[1]*sc, 1.5);
+  const cyy = h*.44, xH = w*.28, xT = w*.72;
+  // event horizon with a glowing photon ring
+  const glow = g.createRadialGradient(xH,cyy,rH,xH,cyy,rH*2.2+6);
+  glow.addColorStop(0,'rgba(255,170,80,.55)'); glow.addColorStop(1,'rgba(255,120,40,0)');
+  g.fillStyle = glow; g.beginPath(); g.arc(xH,cyy,rH*2.2+6,0,6.28); g.fill();
+  g.strokeStyle = '#ffd98a'; g.lineWidth = 1.5; g.beginPath(); g.arc(xH,cyy,rH*1.5,0,6.28); g.stroke();
+  g.fillStyle = '#000'; g.beginPath(); g.arc(xH,cyy,rH,0,6.28); g.fill();
+  // comparison object
+  if (thing[2] === 'orbit'){
+    g.setLineDash([4,4]); g.strokeStyle = 'rgba(160,190,255,.8)'; g.beginPath(); g.arc(xT,cyy,rT,0,6.28); g.stroke(); g.setLineDash([]);
+    g.fillStyle = '#ffcc4d'; g.beginPath(); g.arc(xT,cyy,2.5,0,6.28); g.fill();
+  } else {
+    g.fillStyle = thing[2]; g.beginPath(); g.arc(xT,cyy,rT,0,6.28); g.fill();
+  }
+  g.textAlign = 'center'; g.font = '600 13px Segoe UI, sans-serif'; g.fillStyle = '#eef0ff';
+  g.fillText('Event horizon', xH, h-30); g.fillText(thing[0][0].toUpperCase()+thing[0].slice(1), xT, h-30);
+  g.font = '12px Segoe UI, sans-serif'; g.fillStyle = '#9ca3cf';
+  g.fillText(`radius ${fmtPlain(km)}`, xH, h-13); g.fillText(`radius ${fmtPlain(thing[1])}`, xT, h-13);
+  const ratio = km/thing[1];
+  g.fillStyle = '#ffa94d'; g.font = '700 12px Segoe UI, sans-serif';
+  g.fillText(ratio >= 1 ? `${+ratio.toPrecision(2)}× bigger` : `${+(1/ratio).toPrecision(2)}× smaller`, w/2, 18);
+}
+
+/* ---------------- Physics tab ---------------- */
+// [name, mass kg, radius m]
+const BODIES = [
+  ['🌙 Moon', 7.35e22, 1.737e6], ['🌍 Earth', 5.97e24, 6.371e6], ['☀️ Sun', 1.99e30, 6.96e8],
+  ['⚪ White dwarf', 2.0e30, 5.8e6], ['🌟 Neutron star', 2.8e30, 1.2e4], ['🕳️ Black hole', 2.0e31, 2.95e4]
+];
+function renderPhys(){
+  document.getElementById('tab-phys').innerHTML = `
+    <h2 style="margin:0 0 4px">The physics of black holes</h2>
+    <p class="sum" style="color:var(--muted)">Year 10 level: equations, calculators and key ideas.</p>
+
+    <h3>1 · Escape velocity</h3>
+    <p class="sum">To escape, your kinetic energy must at least equal the gravitational energy holding you down:</p>
+    <div class="eq">½mv² = GMm / r &nbsp;→&nbsp; v = √(2GM / r)<small>Your mass m cancels, so escape velocity doesn't depend on how heavy you are.</small></div>
+    <p class="sum">Squeeze mass into a smaller radius and v goes up. Pick an object:</p>
+    <div class="presets" id="bodyBtns">${BODIES.map((b,i)=>`<button data-i="${i}">${b[0]}</button>`).join('')}</div>
+    <div id="escOut"></div>
+
+    <h3>2 · The Schwarzschild radius</h3>
+    <p class="sum">Set the escape velocity equal to the speed of light, c, and rearrange for r:</p>
+    <div class="work">
+      <div class="ln">c = √(2GM / r)</div>
+      <div class="ln">c² = 2GM / r</div>
+      <div class="ln">Rₛ = 2GM / c²</div>
+    </div>
+    <p class="sum" style="margin-top:8px">Anything squashed inside its Schwarzschild radius becomes a black hole. Try different masses in the <b>Sizes</b> tab.</p>
+
+    <h3>3 · Gravitational time dilation</h3>
+    <div class="eq">t_far = t_near / √(1 − Rₛ / r)<small>Clocks closer to a mass run slower. GPS satellites must correct for this, even for Earth's weak gravity!</small></div>
+    <p class="sum">Hover at a distance from the black hole (in Rₛ):</p>
+    <input type="range" id="rdil" min="1.01" max="10" step="0.01" value="2">
+    <div id="dilOut"></div>
+
+    <h3>4 · Light and the EM spectrum</h3>
+    <p class="sum">The hotter the gas, the shorter the peak wavelength (Wien's law, λₘₐₓ = 2.9×10⁻³ / T):</p>
+    <ul class="air-list">
+      <li><b>Outer disk</b>, ~10,000 K → visible and ultraviolet</li>
+      <li><b>Inner disk</b>, ~10,000,000 K → X-rays</li>
+      <li><b>Jets</b> → radio waves (from fast electrons spiralling in magnetic fields) and even gamma rays</li>
+      <li><b>Near the horizon</b> → light is redshifted to longer wavelengths as it climbs out</li>
+    </ul>
+
+    <h3>5 · Tidal forces</h3>
+    <div class="eq">Δa ≈ 2GML / r³<small>Depends on 1/r³, so halving your distance makes the stretch 8 times stronger.</small></div>
+
+    <h3>Key equations</h3>
+    <ul class="contains">
+      <li><span>🍎</span><div><b>F = GMm / r²</b><br>Newton's gravity (inverse square law)</div></li>
+      <li><span>🚀</span><div><b>v = √(2GM / r)</b><br>Escape velocity</div></li>
+      <li><span>🕳️</span><div><b>Rₛ = 2GM / c²</b><br>Size of the event horizon</div></li>
+      <li><span>🪐</span><div><b>v = √(GM / r)</b><br>Speed of a circular orbit</div></li>
+      <li><span>⚡</span><div><b>E = mc²</b><br>Mass–energy equivalence</div></li>
+      <li><span>🌈</span><div><b>c = fλ</b><br>Wave equation for light</div></li>
+    </ul>
+    <p class="why">G = 6.67 × 10⁻¹¹ N m²/kg² · c = 3.0 × 10⁸ m/s · Sun's mass = 2.0 × 10³⁰ kg</p>
+
+    <h3>Timeline of discovery</h3>
+    <ul class="timeline">
+      <li><b>1783</b>John Michell imagines "dark stars" whose escape velocity beats the speed of light.</li>
+      <li><b>1915</b>Einstein publishes general relativity.</li>
+      <li><b>1916</b>Karl Schwarzschild solves Einstein's equations and finds the event horizon.</li>
+      <li><b>1939</b>Oppenheimer and Snyder show a massive star can collapse into one.</li>
+      <li><b>1964</b>Cygnus X-1 is found: the first strong black hole candidate.</li>
+      <li><b>1967</b>John Wheeler popularises the name "black hole".</li>
+      <li><b>1974</b>Stephen Hawking predicts Hawking radiation.</li>
+      <li><b>2015</b>LIGO detects gravitational waves from two merging black holes.</li>
+      <li><b>2019</b>First image of a black hole: M87*.</li>
+      <li><b>2020</b>Nobel Prize: Penrose (theory), Genzel and Ghez (Sagittarius A*).</li>
+      <li><b>2022</b>First image of Sagittarius A*, our galaxy's black hole.</li>
+    </ul>`;
+  document.querySelectorAll('#bodyBtns button').forEach(b => b.onclick = () => showEsc(+b.dataset.i));
+  const r = document.getElementById('rdil');
+  r.oninput = () => showDil(+r.value);
+  showEsc(1); showDil(2);
+}
+function showEsc(i){
+  const [name, M, r] = BODIES[i];
+  const v = Math.min(3e8, Math.sqrt(2*6.674e-11*M/r)), kms = v/1000;
+  const pct = Math.log10(Math.max(kms,1))/Math.log10(3e5)*100;
+  document.querySelectorAll('#bodyBtns button').forEach((b,k) => b.classList.toggle('primary', k===i));
+  document.getElementById('escOut').innerHTML = `<div class="result">
+    <div><b>${name.replace(/^[^A-Za-z]+/,'')}</b>: mass ${sci(M)} kg, radius ${sci(r)} m</div>
+    <div class="big">${kms >= 299000 ? '300,000 km/s = c' : `${(+kms.toPrecision(3)).toLocaleString()} km/s`}</div>
+    <div>${i===5 ? 'At the event horizon the escape velocity equals the speed of light. Nothing can get out.' : `That's ${+(v/3e8*100).toPrecision(2)}% of the speed of light.`}</div>
+    <div class="meter"><i style="width:${pct}%"></i></div>
+    <small style="color:var(--muted)">Bar uses a log scale, from 1 km/s up to the speed of light</small></div>`;
+}
+function showDil(r){
+  const f = Math.sqrt(1 - 1/r), far = 1/f;
+  const farTxt = far < 24 ? `${far.toFixed(2)} hours` : far < 24*365 ? `${(far/24).toFixed(1)} days` : `${(far/8760).toFixed(1)} years`;
+  document.getElementById('dilOut').innerHTML = `<div class="result">
+    <div>At <b>${r.toFixed(2)} Rₛ</b>, your clock ticks at <b>${(f*100).toFixed(1)}%</b> the rate of a far-away clock.</div>
+    <div class="meter"><i style="width:${f*100}%"></i></div>
+    <div>1 hour for you = <b>${farTxt}</b> for someone far away.</div>
+    <small style="color:var(--muted)">Drag towards 1 Rₛ: the factor shoots towards infinity at the horizon.</small></div>`;
 }
 
 /* ---------------- Quiz ---------------- */
 let qOrder = [], qi = 0, score = 0;
 const shuffle = a => { a = a.slice(); for (let i=a.length-1;i>0;i--){ const j = Math.random()*(i+1)|0; [a[i],a[j]] = [a[j],a[i]]; } return a; };
-function startQuiz(){ qOrder = shuffle(QUIZ).slice(0,10); qi = 0; score = 0; renderQuiz(); }
+function startQuiz(){ qOrder = shuffle(QUIZ).slice(0,12); qi = 0; score = 0; renderQuiz(); }
 function renderQuiz(){
   const el = document.getElementById('tab-quiz');
   if (qi >= qOrder.length){
-    const msg = score === qOrder.length ? '🏆 Perfect! You\'re a black hole expert!' : score >= 8 ? '🌟 Great work!' : score >= 5 ? '👍 Good try. Explore the parts and try again!' : '📚 Have another look around the black hole and try again!';
+    const msg = score === qOrder.length ? '🏆 Perfect! You\'re a black hole expert!' : score >= 9 ? '🌟 Great work!' : score >= 6 ? '👍 Good try. Explore the parts and try again!' : '📚 Have another look around the black hole and try again!';
     el.innerHTML = `<h2>Quiz complete!</h2><p class="q">You scored <b>${score} / ${qOrder.length}</b></p><p>${msg}</p><button class="primary" id="again">Try again</button>`;
     document.getElementById('again').onclick = startQuiz;
     return;
@@ -663,6 +898,7 @@ function renderQuiz(){
 function showTab(name){
   document.querySelectorAll('.tabs button').forEach(b => b.classList.toggle('on', b.dataset.tab===name));
   document.querySelectorAll('.tab').forEach(t => t.classList.toggle('on', t.id==='tab-'+name));
+  if (name === 'size') drawScale(massKm);
 }
 document.querySelectorAll('.tabs button').forEach(b => b.onclick = () => showTab(b.dataset.tab));
 
@@ -701,7 +937,7 @@ tourNext.onclick = () => {
 function endTour(){ tour.active = false; tourBar.classList.add('hidden'); }
 document.getElementById('tourStop').onclick = endTour;
 
-resize(); renderZone(); renderSize(); startQuiz();
+resize(); renderZone(); renderSize(); renderPhys(); startQuiz();
 requestAnimationFrame(frame);
 </script>
 </body>
